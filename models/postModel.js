@@ -21,10 +21,6 @@ const postSchema = new mongoose.Schema(
             url: String,
             public_id: String,
         },
-        videos: {
-            url: String,
-            public_id: String,
-        },
         likes: [
             {
                 type: ObjectId,

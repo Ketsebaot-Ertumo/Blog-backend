@@ -3,7 +3,7 @@ const ErrorResponse = require('../utils/errorResponse');
 
 
 exports.signup = async (req, res, next) => {
-    const{email}= req.body;
+    const {email}= req.body;
     const userExist= await User.findOne({email});
     if (userExist){
         return next(new ErrorResponse("E-mail already registered", 400));
@@ -47,12 +47,13 @@ exports.signin = async (req, res, next) => {
     }
 }
 
+
 //logout
 exports.logout = (req, res, next) => {
     res.clearCookie('token');
     res.status(200).json({
         success: true,
-        message: "Logged Out"
+        message: "Logged out"
     })
 }
 
@@ -68,11 +69,11 @@ exports.userProfile = async(req, res, next) => {
 const sendTokenResponse = async (user, codeStatus, res)=>{
     const token = await user.getJwtToken();
     res
-        .status(codeStatus)
-        .cookie('token', token, {maxAge: 60 * 60 * 1000, httpOnly: true})
-            .json({
-                success: true,
-                id: user._id,
-                role: user.role
-            })
+      .status(codeStatus)
+      .cookie('token', token, {maxAge: 60 * 60 * 1000, httpOnly: true})
+         .json({
+            success: true,
+            id: user._id,
+            role: user.role
+         })
 }

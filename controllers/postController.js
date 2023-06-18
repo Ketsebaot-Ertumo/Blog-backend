@@ -5,16 +5,16 @@ const { json } = require('express');
 
 //create post
 exports.createPost = async(req,res, next) =>{
-    const {title, content, postedBy, image, videos, likes, comments } = req.body;
+    const {title, content, postedBy, image, likes, comments } = req.body;
 
     try{
         //upload image in cloudinary
-        const result = await cloudinary.UploadStream.upload(image, {
+        const result = await cloudinary.uploader.upload(image, {
             folder: "posts",
             width: 1200,
             crop: "scale"
         })
-        const post = await Post.createPost[{
+        const post = await Post.create[{
             title, 
             content, 
             postedBy: req.user._id,
@@ -23,27 +23,25 @@ exports.createPost = async(req,res, next) =>{
                 url: result.secure_url
             },
 
-    //upload video  
+            }];
+            res.status(201),json({
+                success: true,
+                post
+            })
 
-    }];
-    res.status(201),json({
-        success: true,
-        post
-    })
+            }
+            catch(error){
+                console.log(error);
+                next(error);
 
-    }
-    catch(error){
-        console.log(error);
-        next(error);
-
-    }
+            }
 
 }
 
 //show post
 exports.showPost = async (req, res,next) =>{
     try{
-        const posts = await Post.field().port({createdAt: -1}).populated('postedBy','name');
+        const posts = await Post.find().sort({createdAt: -1}).populated('postedBy','name');
         res.status(201).json({
             success: true,
             posts
@@ -57,10 +55,10 @@ exports.showPost = async (req, res,next) =>{
 //show single post
 exports.showSinglePost = async (req, res,next) =>{
     try{
-        const posts = await Post.fieldById(req.paramsid).populated('comments.postedBy', 'name');
+        const posts = await Post.findById(req.params.id).populated('comments.postedBy', 'name');
         res.status(201).json({
             success: true,
-            posts
+            post
         })
     }
  catch (error){
@@ -71,15 +69,15 @@ exports.showSinglePost = async (req, res,next) =>{
 
 //delete post
 exports.deletePost = async (req, res,next) =>{
-    const currentPost = await Post.fieldById(req.params,id);
+    const currentPost = await Post.findById(req.params.id);
     
     //delete the post image in cloudinary
     const ImgId = currentPost.image.public_id;
     if(ImgId){
-        await cloudinary.Uploader.destroy(ImgId);
+        await cloudinary.uploader.destroy(ImgId);
     }
     try{
-        const Post = await Post.fieldByIdAndRemove(req.params.id);
+        const Post = await Post.findByIdAndRemove(req.params.id);
         res.status(200).json({
             success: true,
             message:"post delete"
@@ -93,25 +91,27 @@ exports.deletePost = async (req, res,next) =>{
 //update post
 exports.updatePost = async (req, res,next) =>{
     try{
-        const {title, content, image, videos} = req.body;
+        const {title, content, image} = req.body;
         const currentPost = await Post.findById(req.params.id);
       
         //build the object data
-        const dafa = {
+        const data = {
             title: title || currentPost.title,
             content: content || currentPost.content,
             image: image || currentPost.image,
         }
 
         //modify post image conditionally
-        if(req.body.image !== ' ' ){
+        if(req.body.image !== '' ){
             const ImgId = currentPost.image.public_id;
             if (ImgId) {
-                await cloudinary.Uploader.destroy(ImgId);
+                await cloudinary.uploader.destroy(ImgId);
             }
 
-            const newImage = await cloudinary.Uploader.upload(req.body.image, {
-                 folder: 'posts', width: 1200, crop: "scale"
+            const newImage = await cloudinary.uploader.upload(req.body.image, {
+                 folder: 'posts', 
+                 width: 1200, 
+                 crop: "scale"
             });
 
             data.image = {
@@ -129,16 +129,16 @@ exports.updatePost = async (req, res,next) =>{
     }
         }
 
-//comment
+//add comment
 exports.addComment = async (req, res,next) =>{
     const {comment} = req.body;
     try{
-        const post = await Post.fieldByIdAndUpdate(req.params.id, {
+        const post = await Post.findByIdAndUpdate(req.params.id, {
             $push: {comments: {text: comment, postedBy: req.user._id}}
         },
             {new: true}
         )
-        res.status(201).json({
+        res.status(200).json({
             success: true,
             post
         })
@@ -151,7 +151,7 @@ exports.addComment = async (req, res,next) =>{
 //add like
 exports.addLike = async (req, res,next) =>{
     try{
-        const post = await Post.fieldByIdAndUpdate(req.params.id,{
+        const post = await Post.findByIdAndUpdate(req.params.id,{
             $addToSet: {likes: req.user._id}
         },
             {new: true}
@@ -169,7 +169,7 @@ exports.addLike = async (req, res,next) =>{
 //remove like
 exports.removeLike = async (req, res,next) =>{
     try{
-        const post = await Post.fieldByIdAndUpdate(req.params.id,{
+        const post = await Post.findByIdAndUpdate(req.params.id,{
             $pull: {likes: req.user._id}
         },
             {new: true}

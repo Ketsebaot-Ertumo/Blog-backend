@@ -17,7 +17,7 @@ exports.isAuthenticated = async(req, res, next) => {
         next();
     }
     catch(error){
-        return next(new ErrorResponse('tou must Login', 402));
+        return next(new ErrorResponse('You must Login', 402));
     }
 }
 

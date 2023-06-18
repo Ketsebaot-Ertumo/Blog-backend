@@ -25,11 +25,14 @@ mongoose.connect(process.env.DATABASE, {
 //middleware
 app.use(morgan('dev'));
 app.use(bodyParser.json({limit: "5mb"}));
-app.use(bodyParser.urlencoded({limit: "5mb", extended: true}));
+app.use(bodyParser.urlencoded({
+    limit: "5mb", 
+    extended: true
+}));
 app.use(cookieParser());
 app.use(cors());
 
-//route middleware
+//routes middleware
 app.use('/api', authRoute);
 app.use('/api', postRoute);
 

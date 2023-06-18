@@ -1,11 +1,10 @@
 const express = require('express');
 const { signup, signin, logout, userProfile } = require('../controllers/authController');
 const router = express.Router();
-const User = require('../models/userModels');
 const { isAuthenticated } = require('../middleware/auth');
 
-//auth route
-//api/signup
+//auth routes
+// /api/signup
 router.post('/signup', signup);
 
 // /api/signin router
