@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
         required:[true, 'email is required'],
         min:8,
         unique: true,
-        dropDups: true,
+        dropDups: true
         
     },
     password:{

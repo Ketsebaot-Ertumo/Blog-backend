@@ -10,10 +10,10 @@ router.post('/signup', signup);
 // /api/signin router
 router.post('/signin', signin);
 
-// /api/log out router
+// /api/logout router
 router.get('/logout', logout);
 
-// /api/log out router
+// /api/me
 router.get('/me', isAuthenticated, userProfile);
 
 module.exports= router;
