@@ -28,7 +28,7 @@ exports.signin = async (req, res, next) => {
             return next(new ErrorResponse("Please add an email", 403));
         }
         if (!password){
-            return next(new ErrorResponse("Please add a passwprd", 403));
+            return next(new ErrorResponse("Please add a password", 403));
         }
         //check user email
         const user = await User.findOne({email});
@@ -38,7 +38,7 @@ exports.signin = async (req, res, next) => {
         //check password
         const isMatched = await user.comparePassword(password);
         if(!isMatched){
-            return next(new ErrorResponse("Invalid credentials", 400));
+            return next(new ErrorResponse("Invalid credentials(password is incorrect)", 400));
         }
         sendTokenResponse(user, 200, res);
     }

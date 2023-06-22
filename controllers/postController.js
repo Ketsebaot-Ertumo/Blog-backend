@@ -4,7 +4,7 @@ const ErrorResponse= require('../utils/errorResponse');
 const { json } = require('express');
 
 //create post
-exports.createPost = async(req,res, next) =>{
+exports.createPost = async (req, res, next) => {
     const {title, content, postedBy, image, likes, comments } = req.body;
 
     try{
@@ -14,7 +14,7 @@ exports.createPost = async(req,res, next) =>{
             width: 1200,
             crop: "scale"
         })
-        const post = await Post.create[{
+        const post = await Post.create({
             title, 
             content, 
             postedBy: req.user._id,
@@ -23,13 +23,13 @@ exports.createPost = async(req,res, next) =>{
                 url: result.secure_url
             },
 
-            }];
+            });
             res.status(201),json({
                 success: true,
                 post
             })
 
-            }
+        }
             catch(error){
                 console.log(error);
                 next(error);
@@ -41,7 +41,7 @@ exports.createPost = async(req,res, next) =>{
 //show post
 exports.showPost = async (req, res,next) =>{
     try{
-        const posts = await Post.find().sort({createdAt: -1}).populated('postedBy','name');
+        const posts = await Post.find().sort({createdAt: -1}).populate('postedBy','name');
         res.status(201).json({
             success: true,
             posts
@@ -55,7 +55,7 @@ exports.showPost = async (req, res,next) =>{
 //show single post
 exports.showSinglePost = async (req, res,next) =>{
     try{
-        const posts = await Post.findById(req.params.id).populated('comments.postedBy', 'name');
+        const post = await Post.findById(req.params.id).populate('comments.postedBy', 'name');
         res.status(201).json({
             success: true,
             post
