@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
+const jwt = require('jsonwebtoken');
+
 
 const postSchema = new mongoose.Schema(
     {
@@ -12,10 +14,13 @@ const postSchema = new mongoose.Schema(
             required: [true, "content is required"],
         },
         postedBy: {
-            type: ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
+            //type: String,
+            //type: ObjectId,
             ref: "User",
+            required: true,
         },
-        images: {
+        image: {
             url: String,
             public_id: String,
         },
@@ -32,7 +37,8 @@ const postSchema = new mongoose.Schema(
                     default: Date.now
                 },
                 postedBy: {
-                    type: ObjectId,
+                    type: mongoose.Schema.Types.ObjectId,
+                    //type: ObjectId,
                     ref: "User"
                 },
             },
@@ -40,5 +46,13 @@ const postSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+
+// //return a JWT
+// userSchema.methods.getJwtToken = function (){
+//     return jwt.sign({ id: this.id}, process.env.JWT_SECRET, {expiresIn: 3600});
+// }
+
+
 
 module.exports = mongoose.model("Post", postSchema);

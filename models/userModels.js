@@ -38,7 +38,19 @@ const userSchema = new mongoose.Schema({
    role:{
         type: String,
         default:'user'
-    }
+    },
+    // Id: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: "User",
+    //     required: true,
+    // },
+   //_id: mongoose.Schema.Types.ObjectId,
+   profilePicture: {
+        //type: String,
+        url: String,
+        public_id: String,
+        //default: '',
+      }
 }, {timestamps:true})
 
 //encrypting password before saving

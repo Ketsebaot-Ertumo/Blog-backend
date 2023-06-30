@@ -1,17 +1,18 @@
+require('dotenv').config();
 const express= require('express');
 const app= express();
 const mongoose= require('mongoose');
 const morgan= require('morgan');
 const bodyParser= require('body-parser');
-require('dotenv').config();
 var cors= require('cors');
 const cookieParser = require('cookie-parser');
 const errorHandler = require('./middleware/error');
+const cloudinary= require('./utils/cloudinary');
+//const cloudinary = require('cloudinary');
 
 //import routes
 const authRoute = require('./routes/authRoute');
-const postRoute = require('./routes/postRoute')
-
+const postRoute=  require('./routes/postRoute');
 
 
 //Database connecton
@@ -36,6 +37,8 @@ app.use(cors());
 app.use('/api', authRoute);
 app.use('/api', postRoute);
 
+app.use(express.json());
+
 //error middleware
 app.use(errorHandler);
 
@@ -46,9 +49,39 @@ app.listen(port, () => {
 });
 
 
+//cloudinary
 
-//models
+// app.post('/api/uploads', async (req, res) => {
+//     try {
+//       const result = await cloudinary.uploader.upload(req.body.image, {
+//         folder: "uploads",
+//         width: 1200,
+//         crop: "scale"
+//       });
+//       res.json({
+//         success: true,
+//         public_id: result.public_id,
+//         url: result.secure_url
+//       });
+//     } catch (error) {
+//       console.log(error);
+//       res.status(500).json({ success: false, message: 'Server error' });
+//     }
+//   });
 
-//utils
-
-//controllers
+//   // API endpoint for uploading images
+// app.post('/api/upload', async (req, res) => {
+//     try {
+//       const result = await cloudinary.uploader.upload(req.body.image, {
+//         folder: 'uploads'
+//       });
+//       res.json({
+//         success: true,
+//         public_id: result.public_id,
+//         url: result.secure_url
+//       });
+//     } catch (error) {
+//       console.log(error);
+//       res.status(500).json({ success: false, message: 'Server error' });
+//     }
+//   });
