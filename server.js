@@ -25,9 +25,9 @@ mongoose.connect(process.env.DATABASE, {
 
 //middleware
 app.use(morgan('dev'));
-app.use(bodyParser.json({limit: "5mb"}));
+app.use(bodyParser.json({limit: "25mb"}));
 app.use(bodyParser.urlencoded({
-    limit: "5mb", 
+    limit: "25mb", 
     extended: true
 }));
 app.use(cookieParser());
@@ -47,6 +47,7 @@ const port= process.env.PORT || 6000;
 app.listen(port, () => {
     console.log(`Server started on port ${port}`);
 });
+
 
 
 //cloudinary

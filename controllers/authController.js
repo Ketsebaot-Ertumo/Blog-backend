@@ -2,26 +2,68 @@ const User = require('../models/userModels');
 const ErrorResponse = require('../utils/errorResponse');
 const cloudinary= require('../utils/cloudinary');
 const jwt= require('jsonwebtoken');
-
+// const generateConfirmationCode = require('../utils/generateConfirmationCode');
+// const sendConfirmationEmail = require('../utils/sendConfirmationEmail');
 
 
 exports.signup = async (req, res, next) => {
     const {email}= req.body;
     const userExist= await User.findOne({email});
+
     if (userExist){
         return next(new ErrorResponse("E-mail already registered", 400));
     }
     try{
         const user =await User.create(req.body);
+        
+        // const confirmationCode = generateConfirmationCode();// my own func. to generate a unique code
+        // user.confirmationCode= confirmationCode;
+        // await user.save();
+        // await sendConfirmationEmail(user.email, confirmationCode);
+
         res.status(201).json({
             success: true,
-            user
-        } )    
+            //message: 'Please check your email to confirm your account',
+            user 
+        } ); 
+        // sendTokenResponse(user, 200, res);
+
     }catch (error){
         next(error);
     }
-
 }
+
+
+// exports.confirmEmail = async (req, res, next) => {
+//     const { confirmationCode } = req.params;
+  
+//     try {
+//       const user = await User.findOne({ confirmationCode });
+//       if (!user) {
+//         return next(new Error('Invalid confirmation code'));
+//       }
+//       user.isConfirmed = true;
+//       user.confirmationCode = undefined;
+//       await user.save();
+//       res.status(200).json({ success: true, message: 'Your account has been confirmed' });
+//     } catch (error) {
+//       next(error);
+//     }
+//   };
+
+
+// exports.confirm = (req, res, next) => {
+//     const {confirmationCode} = req.params.confirmationCode;
+
+//     //Update user status in database
+//     confirmUserInDatabase(confirmationCode)
+//     .then(()=>{res.status(200).send(`Account confirmed.`);})
+//     .catch((err) => {console.error(err);
+//             res.status(500).send('Error confirming account.');
+//             next(err)});
+// }
+
+
 
 exports.signin = async (req, res, next) => {
     try{
@@ -60,133 +102,127 @@ exports.logout = (req, res, next) => {
     })
 }
 
-//user profile
-exports.userProfile = async(req, res) => {
-    //const user = await User.findById(req.user._id).select('password');
-    const user = await User.findOne({email: req.body.email}).select('password');
+
+//show profile
+exports.showProfile = async (req, res) => {
+    const user = await User.findById(req.user._id).select('name email profilePicture');
+    // const user = await User.findOne().select('password');
     res.status(200).json({
         success: true,
         user
+        //user:{user.email, user.profilePicture}
     });
-}
+},
+
+
+//show all user
+exports.showUsers = async (req, res) => {
+    // console.log(req.body);
+    const users = await User.find().select('name email profilePicture').sort({createdAt: -1}).populate('_id','name');;
+    res.status(200).json({
+        success: true,
+        users
+        //users:{user.email, user.profilePicture}
+    });
+},
 
 
 
-// //user profile
-// exports.userProfile = (req, res) => {
-// res.send(req.user);
-// };
-
-
-//create user profile picture and updating
-
-// Upload a user's profile picture to Cloudinary
-exports.uploadProfilePicture = async (req, res, next) => {
-    //const {email, password} = req.body;
+// creating profile picture
+exports.createProfilePicture= async (req, res) => {
     console.log(req.body);
-
-    try {
-      const user = await User.findOne({ email: req.body.email });
-        
-      //Check if the user exists
-      if (!user) {
+    //const user = await User.findById(req.user._id);
+    const user = await User.findOne({ email: req.body.email });
+    //Check if the user exists
+    if (!user) {
         return res.status(404).json({ message: 'User not found' });
       }
   
-      // Upload the image to Cloudinary
-      const result = await cloudinary.uploader.upload(req.file.path, {
-            folder: 'profile-pictures',
-            width: 1200,
-            crop: "scale"
-        // public_id: `profile-pictures/${user._id}`,
-        // overwrite: true,
-      });
-  
-      // set the user's profile picture in the database
-      user.profilePicture.url = result.secure_url;
-      user.profilePicture.public_id = result.public_id;
-      await user.save();
-  
-      // Return the updated user document
-      return res.status(200).json(user);
-    } catch (err) {
-      return next(err);
-    }
-  };
-
-
-
-// //user profile update
-// exports.updateCurrentUser = async (req, res, next) => {
-//     const {name, profilePicture } = req.body;
-//     console.log(req.body);
-//     try {
-//         //console.log(req.user._id);
-//         const user = await User.findById(req.body._id);
-    
-//         // if (!user) {
-//         //   return res.status(404).json({ message: 'User not found' });
-//         // }
-//         if (req.file ) {
-//           user.profilePicture = {
-//             url: req.file.url,
-//             public_id: req.file.public_id,
-//           };
-//           await user.save();
-//         }
-    
-//         if (req.body.name) {
-//           user.name = req.body.name;
-//           await user.save();
-//         }
-    
-//         res.status(200).json({ message: 'User updated successfully' });
-//       } catch (err) {
-//         next(err);
-//       }
-//     };
-    
-    
-  
-
-
+       // Upload the image to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'profile-pictures',
+        width: 1200,
+        crop: "scale"
+    });
+    user.profilePicture.url = result.secure_url;
+    user.profilePicture.public_id = result.public_id;
+    await user.save();
+    res.status(200).json(user);
+},
 
 
 //user profile update
-// exports.updateCurrentUser = async(req,res) =>{
+// exports.updateCurrentUser = async (req, res, next) => {
+    exports.updateProfile = async (req, res, next) => {
+        console.log(req.body);
+        try {
+            // const user = await User.findById(req.body._id);
+            const user = await User.findOne({ email: req.body.email });
+    
+            if (!user) {
+              return res.status(404).json({ message: 'User not found' });
+            }
+        
+            // Upload the image to Cloudinary
+            if (req.file ) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'profile-pictures',
+                width: 1200,
+                crop: "scale"
+            });
+            user.profilePicture.url = result.secure_url;
+            user.profilePicture.public_id = result.public_id;
+            }
+            //await user.save();
+            //res.status(200).json(user);
+    
+            if (req.body.name) {
+              user.name = req.body.name;
+              await user.save();
+            }
+            if (req.body.email) {
+                user.email = req.body.email;
+                await user.save();
+              }
+            await user.save();
+            res.status(200).json({ 
+                message: 'User updated successfully',
+                user
+            });
+          } catch (err) {
+            next(err);
+          }
+        };
 
-//     const updates = Object.keys(req.body);
-//     const allowedUpdates = ['name'];
-//     if (req.file) {
-//         allowedUpdates.push('profilePicture');
-//         req.body.profilePicture = req.file.filename;
-//     }
-//     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-//     if (!isValidOperation) {
-//         return res.status(400).send({ error: 'Invalid updates!' });
-//     }
-//     try {
-//         updates.forEach((update) => (req.user[update] = req.body[update]));
-//         await req.user.save();
-//         res.send(req.user);
 
-//     } catch (e) {
-//     res.status(400).send(e);
-//     }
-//     }
+
+//deleting profile picture
+exports.deleteProfilePicture= async (req, res) => {
+    
+    console.log(req.body);
+    // const user = await User.findById(req.user._id);
+    const user = await User.findOne({ email: req.body.email });
+    user.profilePicture = null;
+    await user.save();
+    res.status(200).json(user);
+}
 
 
 
 
 const sendTokenResponse = async (user, codeStatus, res)=>{
     const token = await user.getJwtToken();
+    //console.log(token);
     res
       .status(codeStatus)
-      .cookie('token', token, {maxAge: 60 * 60 * 1000, httpOnly: true})
+       .cookie('token', token, {maxAge: 60 * 60 * 1000, httpOnly: true})
          .json({
             success: true,
             id: user._id,
             role: user.role,
-         })
+            // name: user.name,
+            // email: user.email,
+            //password: user.password,     
+         });
 }
 

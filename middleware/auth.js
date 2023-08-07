@@ -2,13 +2,22 @@ const ErrorResponse = require('../utils/errorResponse');
 const User = require('../models/userModels');
 const jwt = require('jsonwebtoken');
 
-// check is user authenticated
+// const express = require('express');
+// const cookieParser = require('cookie-parser');
+// const app = express();
+
+// app.use(cookieParser());
+
+
+// check the user authenticated
 exports.isAuthenticated = async(req, res, next) => {
-    const {token} = req.cookies;
+    //const {token} = req.cookies;
+    const token = req.cookies.token;
+    //console.log(token);
 
     //make sure token exist
-    if(token){
-        return next(new ErrorResponse('You must log in', 401));
+    if(!token){
+        return next(new ErrorResponse('You must log In..', 401));
     }
     try{
         //verfy token
@@ -24,6 +33,7 @@ exports.isAuthenticated = async(req, res, next) => {
 //middleware for admin
 exports.isAdmin = (req, res, next) =>{
     if(req.user.role === 'user'){
+    // if(req.user.role !== 'admin'){
         return next(new ErrorResponse('Access denied, You must an admin', 401));
     }
     next();
@@ -31,7 +41,8 @@ exports.isAdmin = (req, res, next) =>{
 
 //middleware for user
 exports.isUser= (req, res,next) => {
-    if(req.user.role == 'admin'){
+    if(req.user.role === 'admin'){
+    // if(req.user.role !== 'user'){
     return next(new ErrorResponse('Access denied, You must login as a user', 401));
 }
 next();

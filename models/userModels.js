@@ -1,7 +1,7 @@
-
 const mongoose= require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+// const uniqueValidator = require('mongoose-unique-validator');
 
 
 const userSchema = new mongoose.Schema({
@@ -39,18 +39,21 @@ const userSchema = new mongoose.Schema({
         type: String,
         default:'user'
     },
-    // Id: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "User",
-    //     required: true,
-    // },
-   //_id: mongoose.Schema.Types.ObjectId,
    profilePicture: {
         //type: String,
         url: String,
         public_id: String,
         //default: '',
       }
+//,
+//    confirmationCode: {
+//         type: String,
+//         unique: true
+//       },
+//    isConfirmed: {
+//         type: Boolean,
+//         default: false
+//       }
 }, {timestamps:true})
 
 //encrypting password before saving
@@ -71,4 +74,18 @@ userSchema.methods.getJwtToken = function (){
     return jwt.sign({ id: this.id}, process.env.JWT_SECRET, {expiresIn: 3600});
 }
 
-module.exports = mongoose.model('User', userSchema)
+// // Add unique validator plugin
+// userSchema.plugin(uniqueValidator, { message: 'Email already exists' });
+
+// // Generate a unique confirmation code for the user
+// userSchema.methods.generateConfirmationCode = function() {
+//   const confirmationCode = Math.floor(100000 + Math.random() * 900000).toString();
+//   this.confirmationCode = confirmationCode;
+//   return confirmationCode;
+// };
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;
+
+//module.exports = mongoose.model('User', userSchema)
