@@ -2,18 +2,12 @@ const ErrorResponse = require('../utils/errorResponse');
 const User = require('../models/userModels');
 const jwt = require('jsonwebtoken');
 
-// const express = require('express');
-// const cookieParser = require('cookie-parser');
-// const app = express();
-
-// app.use(cookieParser());
-
 
 // check the user authenticated
 exports.isAuthenticated = async(req, res, next) => {
-    //const {token} = req.cookies;
+    // const {token} = req.cookies;
     const token = req.cookies.token;
-    //console.log(token);
+    console.log(req.cookies);
 
     //make sure token exist
     if(!token){

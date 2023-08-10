@@ -8,7 +8,7 @@ var cors= require('cors');
 const cookieParser = require('cookie-parser');
 const errorHandler = require('./middleware/error');
 const cloudinary= require('./utils/cloudinary');
-//const cloudinary = require('cloudinary');
+
 
 //import routes
 const authRoute = require('./routes/authRoute');
@@ -47,42 +47,3 @@ const port= process.env.PORT || 6000;
 app.listen(port, () => {
     console.log(`Server started on port ${port}`);
 });
-
-
-
-//cloudinary
-
-// app.post('/api/uploads', async (req, res) => {
-//     try {
-//       const result = await cloudinary.uploader.upload(req.body.image, {
-//         folder: "uploads",
-//         width: 1200,
-//         crop: "scale"
-//       });
-//       res.json({
-//         success: true,
-//         public_id: result.public_id,
-//         url: result.secure_url
-//       });
-//     } catch (error) {
-//       console.log(error);
-//       res.status(500).json({ success: false, message: 'Server error' });
-//     }
-//   });
-
-//   // API endpoint for uploading images
-// app.post('/api/upload', async (req, res) => {
-//     try {
-//       const result = await cloudinary.uploader.upload(req.body.image, {
-//         folder: 'uploads'
-//       });
-//       res.json({
-//         success: true,
-//         public_id: result.public_id,
-//         url: result.secure_url
-//       });
-//     } catch (error) {
-//       console.log(error);
-//       res.status(500).json({ success: false, message: 'Server error' });
-//     }
-//   });
