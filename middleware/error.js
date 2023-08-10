@@ -18,7 +18,7 @@ if(err.code === 11000){
 //Mongoose validation error
 if(err.name === "ValidationError"){
     const message = Object.values(err.errors).map(val => ' ' + val.message);
-    error =new ErrorResponse(message, 400);
+    error =new ErrorResponse(message, 401);
 }
 res.status(error.codeStatus || 500).json({
     success: false,

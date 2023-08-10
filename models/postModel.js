@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { ObjectId } = mongoose.Schema;
-
+const jwt = require('jsonwebtoken');
 
 
 const postSchema = new mongoose.Schema(
@@ -14,16 +14,22 @@ const postSchema = new mongoose.Schema(
             required: [true, "content is required"],
         },
         postedBy: {
-            type: ObjectId,
+            // type: mongoose.Schema.Types.ObjectId,
+            type: String,
+            //type: ObjectId,
             ref: "User",
+            //required: true,
         },
-        images: {
+        by: {
+            type: mongoose.Schema.Types.ObjectId,
+            //type: ObjectId,
+            ref: "User",
+            //required: true,
+        },
+        image: {
             url: String,
             public_id: String,
-        },
-        videos: {
-            url: String,
-            public_id: String,
+            //required:[true, "image is required"],
         },
         likes: [
             {
@@ -38,7 +44,9 @@ const postSchema = new mongoose.Schema(
                     default: Date.now
                 },
                 postedBy: {
-                    type: ObjectId,
+                    //type: mongoose.Schema.Types.ObjectId,
+                    //type: ObjectId,
+                    type: String,
                     ref: "User"
                 },
             },
@@ -46,5 +54,7 @@ const postSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+
 
 module.exports = mongoose.model("Post", postSchema);
