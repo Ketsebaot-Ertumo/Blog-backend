@@ -44,44 +44,6 @@ exports.createPost = async (req, res, next) => {
 }
 
 
-//create post with authentication
-// function createPost(req, res) {
-// // get token from request headers
-// const token = req.headers.authorization?.split(' ')[1];
-
-// // verify token
-// jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-//   if (err) {
-//     // if token is invalid, send error response
-//     res.status(401).json({ success: false, message: 'Invalid token' });
-//   } else {
-//     // if token is valid, create post and send success response
-//     const post = new Post({ title: req.body.title, content: req.body.content });
-//     post.save()
-//       .then(() => {
-//         res.status(201).json({ success: true, post });
-//       })
-//       .catch(error => {
-//         res.status(500).json({ success: false, message: error.message });
-//       });
-//   }
-// });
-// }
-
-
-// //create post
-// exports.createPost = async(req, res) => {
-//     // console.log(req.body)
-//     const post= new Post({...req.body, postedBy: "req.user._id",});
-//     try{
-//         await post.save();
-//         res.status(201).send(post);
-//     }catch(e){
-//         res.status(400).send(e);
-//     }
-// // console.log(post)
-// }
-
 
 
 //show all posts
@@ -90,7 +52,7 @@ exports.showPosts = async (req, res,next) =>{
     //console.log();
     try{
         // const posts = await Post.find().sort({createdAt: -1}).populate('_id').select('_id');
-        const posts = await Post.find().sort({createdAt: -1}).populate('_id','name');
+        const posts = await Post.find().sort({createdAt: -1});
         //console.log(posts);
 
           if (!posts) {
@@ -114,7 +76,7 @@ exports.showPostById= async(req, res, next) => {
         try{
         const userId = req.params.id; // Get the user ID from the request params
         // console.log(userId)
-        const post = await Post.find({ by: userId }).sort({ createdAt: -1 }).populate('_id');
+        const post = await Post.find({ by: userId }).sort({ createdAt: -1 });
         // const post = await Post.findById(req.params.id).sort({createdAt: -1}).populate('_id', 'name');
           //const post = await Post.find().sort({createdAt: -1}).populate('_id','name');
           console.log(post);
@@ -132,16 +94,7 @@ exports.showPostById= async(req, res, next) => {
 }
 
 
-//   exports.showPostById = async (req, res) => {
-//   const { author } = req.query;
-//   const query = author ? { author } : {};
-//   try {
-//     const blogPosts = await BlogPost.find(query).populate('author');
-//     res.send(blogPosts);
-//   } catch (e) {
-//     res.status(500).send();
-//   }
-// };
+
 
       
 
@@ -151,7 +104,7 @@ exports.showPostById= async(req, res, next) => {
 //show single post
 exports.showSinglePost = async (req, res,next) =>{
     try{
-        const post = await Post.findById(req.params.id).populate('comments.postedBy');
+        const post = await Post.findById(req.params.id);
         // const post = await Post.findById(req.params.id).populate('_id').select('_id');
         res.status(201).json({
             success: true,
