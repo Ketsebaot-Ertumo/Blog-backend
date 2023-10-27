@@ -1,5 +1,5 @@
 const express = require('express');
-const { signup, signin, logout, confirmEmail, showProfile, showUsers, createProfilePicture, updateProfile, deleteProfilePicture } = require('../controllers/authController');
+const { signup, signin, logout, confirmEmail, showProfile, showUsers, createProfilePicture, updateProfile, deleteProfilePicture, deleteuser, deleteMyAccount, editUser, showUser } = require('../controllers/authController');
 const router = express.Router();
 const { isAuthenticated, isUser, isAdmin } = require('../middleware/auth');
 const multer = require('multer');
@@ -21,26 +21,22 @@ const upload = multer({ storage: storage });
 
 // /api/signup
 router.post('/signup', signup);
-
-// // /api/confirm/:confirmationCode
-// router.get('/confirm/:confirmationCode', confirmEmail)
-
 // /api/signin router
 router.post('/signin', signin);
-
 // /api/logout router
 router.get('/logout', logout);
 
-// /api/me (profile)                 
+
+// /api/users                 
 router.get('/me',isAuthenticated, showProfile);
-
-// /api/users
 router.get('/users', isAuthenticated, isAdmin, showUsers);
-
-// /api/me creating, updating, and deleting profile picture
-router.post('/me', upload.single('profilePicture'), createProfilePicture);
-router.put('/me', upload.single('profilePicture'), updateProfile);
-router.delete('/me', deleteProfilePicture)
+router.get('/user', isAuthenticated, showUser);
+router.delete('/user/delete', isAuthenticated, deleteuser);
+router.get('/me/delete', isAuthenticated, deleteMyAccount);
+router.post('/me',isAuthenticated, upload.single('profilePicture'), createProfilePicture);
+router.put('/me',isAuthenticated, upload.single('profilePicture'), updateProfile);
+router.delete('/me',isAuthenticated, deleteProfilePicture);
+router.put('/me',isAuthenticated, editUser);
 
 
 module.exports= router;

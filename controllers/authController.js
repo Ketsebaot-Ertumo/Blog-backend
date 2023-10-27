@@ -21,12 +21,12 @@ exports.signup = async (req, res, next) => {
         // await user.save();
         // await sendConfirmationEmail(user.email, confirmationCode);
 
-        res.status(201).json({
-            success: true,
-            //message: 'Please check your email to confirm your account',
-            user 
-        } ); 
-        // sendTokenResponse(user, 200, res);
+        // res.status(201).json({
+        //     success: true,
+        //     //message: 'Please check your email to confirm your account',
+        //     user 
+        // } ); 
+        sendTokenResponse(user, 200, res);
 
     }catch (error){
         next(error);
@@ -105,7 +105,19 @@ exports.logout = (req, res, next) => {
 
 //show profile
 exports.showProfile = async (req, res) => {
-    const user = await User.findById(req.user._id).select('name email profilePicture');
+    const user = await User.findById(req.user._id).select('name email role profilePicture').sort({updatedAt: -1});
+    // const user = await User.findOne().select('password');
+    res.status(200).json({
+        success: true,
+        user
+        //user:{user.email, user.profilePicture}
+    });
+},
+
+
+exports.showUser = async (req, res) => {
+    const {email}=req.body;
+    const user = await User.findOne({email}).select('name email profilePicture').sort({updatedAt: -1});
     // const user = await User.findOne().select('password');
     res.status(200).json({
         success: true,
@@ -117,8 +129,7 @@ exports.showProfile = async (req, res) => {
 
 //show all user
 exports.showUsers = async (req, res) => {
-    // console.log(req.body);
-    const users = await User.find().select('name email profilePicture').sort({createdAt: -1}).populate('_id','name');;
+    const users = await User.find().select('name email role profilePicture').sort({updatedAt: -1});
     res.status(200).json({
         success: true,
         users
@@ -127,12 +138,59 @@ exports.showUsers = async (req, res) => {
 },
 
 
+exports.deleteuser= async (req, res) => {
+        const { email } = req.body;
+        try {
+          const user = await User.findOne({ email });
+          if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+          }
+          await user.remove();
+          res.status(200).json({ message: 'User deleted successfully' });
+        } catch (error) {
+          console.log(error);
+          res.status(500).json({ message: 'Error deleting user' });
+        }
+}
+
+
+exports.deleteMyAccount = async (req, res) => {
+    try {
+      const user = await User.findByIdAndRemove(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      res.status(200).json({ message: 'Your account deleted successfully' });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: 'Error deleting user' });
+    }
+  };
+
+
+  exports.editUser = async (req, res) => {
+    const { id } = req.params;
+    const { name, email, age } = req.body;
+
+    try {
+      const user = await User.findByIdAndUpdate(id, { name, email, age }, { new: true });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      res.status(200).json({success:true, user });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: 'Error editing user' });
+    }
+  };
+
+
 
 // creating profile picture
 exports.createProfilePicture= async (req, res) => {
     console.log(req.body);
     //const user = await User.findById(req.user._id);
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.user.email });
     //Check if the user exists
     if (!user) {
         return res.status(404).json({ message: 'User not found' });
@@ -144,6 +202,7 @@ exports.createProfilePicture= async (req, res) => {
         width: 1200,
         crop: "scale"
     });
+    
     user.profilePicture.url = result.secure_url;
     user.profilePicture.public_id = result.public_id;
     await user.save();
@@ -154,22 +213,21 @@ exports.createProfilePicture= async (req, res) => {
 //user profile update
 // exports.updateCurrentUser = async (req, res, next) => {
     exports.updateProfile = async (req, res, next) => {
-        console.log(req.body);
+      // console.log(req.file?true:false)
         try {
             // const user = await User.findById(req.body._id);
-            const user = await User.findOne({ email: req.body.email });
+            const user = await User.findOne({ email: req.user.email });
     
             if (!user) {
               return res.status(404).json({ message: 'User not found' });
             }
-        
             // Upload the image to Cloudinary
             if (req.file ) {
             const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: 'profile-pictures',
                 width: 1200,
                 crop: "scale"
-            });
+            });console.log(result)
             user.profilePicture.url = result.secure_url;
             user.profilePicture.public_id = result.public_id;
             }
@@ -215,14 +273,13 @@ const sendTokenResponse = async (user, codeStatus, res)=>{
     //console.log(token);
     res
       .status(codeStatus)
-       .cookie('token', token, {maxAge: 60 * 60 * 1000, httpOnly: true})
+       .cookie('token', token, {maxAge: 6*60 * 60 * 1000, httpOnly: true})
          .json({
             success: true,
             id: user._id,
             role: user.role,
             // name: user.name,
-            // email: user.email,
-            //password: user.password,     
+            // email: user.email,     
          });
 }
 

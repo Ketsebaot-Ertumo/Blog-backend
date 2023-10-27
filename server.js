@@ -25,13 +25,14 @@ mongoose.connect(process.env.DATABASE, {
 
 //middleware
 app.use(morgan('dev'));
-app.use(bodyParser.json({limit: "25mb"}));
+app.use(bodyParser.json({limit: "50mb"}));
 app.use(bodyParser.urlencoded({
-    limit: "25mb", 
+    limit: "50mb", 
     extended: true
 }));
 app.use(cookieParser());
-app.use(cors());
+// app.use(cors());
+app.use(cors({origin: true, credentials: true}));
 
 //routes middleware
 app.use('/api', authRoute);
@@ -43,7 +44,7 @@ app.use(express.json());
 app.use(errorHandler);
 
 //create port
-const port= process.env.PORT || 6000;
+const port= process.env.PORT || 9000;
 app.listen(port, () => {
     console.log(`Server started on port ${port}`);
 });

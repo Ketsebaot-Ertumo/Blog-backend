@@ -5,12 +5,8 @@ const jwt = require('jsonwebtoken');
 
 // check the user authenticated
 exports.isAuthenticated = async(req, res, next) => {
-    // const {token} = req.cookies;
     // console.log(req.cookies);
     const token = req.cookies.token;
-    
-
-    //make sure token exist
     if(!token){
         return next(new ErrorResponse('You must log In..', 401));
     }
@@ -21,7 +17,7 @@ exports.isAuthenticated = async(req, res, next) => {
         next();
     }
     catch(error){
-        return next(new ErrorResponse('You must Login', 402));
+        return next(new ErrorResponse('error occured', 402));
     }
 }
 

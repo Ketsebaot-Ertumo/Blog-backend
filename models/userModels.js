@@ -5,6 +5,11 @@ const jwt = require('jsonwebtoken');
 
 
 const userSchema = new mongoose.Schema({
+    // id: {
+    //     type: Number,
+    //     autoIncrement: true,
+    //     unique:true,
+    // },
     name:{
         type:String,
         required:[true, 'First name is required'],
@@ -30,10 +35,10 @@ const userSchema = new mongoose.Schema({
        min:[6,'Pasword must have at least 6 character.']
     },
 
-   date:{
-        type: Date,
-        default:Date.now
-    },
+//    date:{
+//         type: Date,
+//         default:Date.now
+//     },
 
    role:{
         type: String,
@@ -71,7 +76,7 @@ userSchema.methods.comparePassword= async function (enteredPassword) {
 
 //return a JWT
 userSchema.methods.getJwtToken = function (){
-    return jwt.sign({ id: this.id}, process.env.JWT_SECRET, {expiresIn: 3600});
+    return jwt.sign({ id: this.id,name: this.name,email:this.email}, process.env.JWT_SECRET, { expiresIn: '6hr' });
 }
 
 // // Add unique validator plugin

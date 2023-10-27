@@ -1,72 +1,47 @@
 const cloudinary= require('../utils/cloudinary');
-const Post= require('../models/postModel');
+const Post= require('../models/postMdels');
 const User = require('../models/userModels');
 const ErrorResponse= require('../utils/errorResponse');
-//const { json } = require('express');
 const jwt= require('jsonwebtoken');
 
 
 //create post
 exports.createPost = async (req, res, next) => {
     const {title, content, postedBy, image, } = req.body;
-    // console.log(req.file);
-
+    const { file } = req;
+    console.log(req.body,file);
     try{
-        
-        //upload image in cloudinary
+        if(!title || !content || !file){
+            res.status(400).json({success: false,message:'Please provide post detail.'})
+        }else{
         const result = await cloudinary.uploader.upload(req.file.path, {
-            folder: "posts",
+            folder: "Posts",
             width: 1200,
             crop: "scale"
         });
+        console.log('======');
         const post = await Post.create({
             title, 
             content, 
             postedBy: req.user.name,
-            //postedBy: "req.body.postedBy",
+            // postedBy: 'postedBy',
             image:{
                 public_id: result.public_id,
                 url: result.secure_url },
             });
-
-            // //save the post to the database
-            // const savedPost = await post.save();
+            await post.save();
             res.status(201).json({
                 success: true,
                 post
-                //post: savedPost
             })
         }
-            catch(error){
+     } catch(error){
                 console.log(error);
-                next(error);
+                res.status(500).json({success:false,error:error.message})
             }
 }
 
 
-//create post with authentication
-// function createPost(req, res) {
-// // get token from request headers
-// const token = req.headers.authorization?.split(' ')[1];
-
-// // verify token
-// jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-//   if (err) {
-//     // if token is invalid, send error response
-//     res.status(401).json({ success: false, message: 'Invalid token' });
-//   } else {
-//     // if token is valid, create post and send success response
-//     const post = new Post({ title: req.body.title, content: req.body.content });
-//     post.save()
-//       .then(() => {
-//         res.status(201).json({ success: true, post });
-//       })
-//       .catch(error => {
-//         res.status(500).json({ success: false, message: error.message });
-//       });
-//   }
-// });
-// }
 
 
 // //create post
@@ -90,7 +65,7 @@ exports.showPosts = async (req, res,next) =>{
     //console.log();
     try{
         // const posts = await Post.find().sort({createdAt: -1}).populate('_id').select('_id');
-        const posts = await Post.find().sort({createdAt: -1}).populate('_id','name');
+        const posts = await Post.find().sort({updatedAt: -1});
         //console.log(posts);
 
           if (!posts) {
@@ -114,7 +89,7 @@ exports.showPostById= async(req, res, next) => {
         try{
         const userId = req.params.id; // Get the user ID from the request params
         // console.log(userId)
-        const post = await Post.find({ by: userId }).sort({ createdAt: -1 }).populate('_id');
+        const post = await Post.find({ by: userId }).sort({ createdAt: -1 });
         // const post = await Post.findById(req.params.id).sort({createdAt: -1}).populate('_id', 'name');
           //const post = await Post.find().sort({createdAt: -1}).populate('_id','name');
           console.log(post);
@@ -151,7 +126,9 @@ exports.showPostById= async(req, res, next) => {
 //show single post
 exports.showSinglePost = async (req, res,next) =>{
     try{
-        const post = await Post.findById(req.params.id).populate('comments.postedBy');
+        // const {postId} = req.query;
+        // const post = await Post.findById({postId});
+        const post = await Post.findById(req.params.id);
         // const post = await Post.findById(req.params.id).populate('_id').select('_id');
         res.status(201).json({
             success: true,
@@ -168,7 +145,7 @@ exports.showSinglePost = async (req, res,next) =>{
 
 //delete post
 exports.deletePost = async (req, res,next) =>{
-    //console.log(req.params.id);
+    console.log(req.params.id);
     const currentPost = await Post.findById(req.params.id);
     console.log(currentPost);
 
@@ -242,34 +219,29 @@ exports.deletePost = async (req, res,next) =>{
 //update post
 exports.updatePost = async (req, res,next) =>{
     try{
-        const {title, content, image} = req.body;
-        // console.log(req.body);
+        const {title, content,} = req.body;
+        const {file}=req;
+        if(!title && !content && !file){
+            return res.status(403).json({success: false,message: "Please provide edited post detail."});
+        }else{
         const currentPost = await Post.findById(req.params.id);
         // console.log(currentPost);
-
         if (!currentPost) {
-            return res.status(404).json({
-                success: false,
-                message: "Post not found",
-            });
+            return res.status(404).json({success: false,message: "Post not found",});
         }
-
-        //build the object data
         const data = {
             title: title || currentPost.title,
             content: content || currentPost.content,
             // image: image || currentPost.image,
-            image: req.file || currentPost.image,
+            image:  file || currentPost.image,
         }
-
-        //modify post image conditionally
+        // console.log("data",data)
         // if(req.body.image !== "" ){
-        if(req.file !== "" ){
+        if(req.file ){
             const ImgId = currentPost.image.public_id;
             if (ImgId) {
                 await cloudinary.uploader.destroy(ImgId);
             }
-
             // const newImage = await cloudinary.uploader.upload(req.body.image, {
             const newImage = await cloudinary.uploader.upload(req.file.path, {
                  folder: 'posts', 
@@ -281,6 +253,7 @@ exports.updatePost = async (req, res,next) =>{
                 public_id: newImage.public_id,
                 url: newImage.secure_url
             }
+            console.log("data",data)
         };
             const postUpdated = await Post.findByIdAndUpdate(req.params.id, data, {new: true});
             res.status(200).json({
@@ -288,10 +261,11 @@ exports.updatePost = async (req, res,next) =>{
                 message: "Updated successfully.",
                 postUpdated
             })
-    } catch(error){
-        next(error);
+    } }catch(error){
+        console.error('Error:', error);
+        res.status(500).json({success:false,error:error.message});
     }
-        }
+}
 
 
 
