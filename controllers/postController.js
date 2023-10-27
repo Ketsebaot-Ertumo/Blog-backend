@@ -44,20 +44,6 @@ exports.createPost = async (req, res, next) => {
 
 
 
-// //create post
-// exports.createPost = async(req, res) => {
-//     // console.log(req.body)
-//     const post= new Post({...req.body, postedBy: "req.user._id",});
-//     try{
-//         await post.save();
-//         res.status(201).send(post);
-//     }catch(e){
-//         res.status(400).send(e);
-//     }
-// // console.log(post)
-// }
-
-
 
 //show all posts
 exports.showPosts = async (req, res,next) =>{
@@ -65,7 +51,7 @@ exports.showPosts = async (req, res,next) =>{
     //console.log();
     try{
         // const posts = await Post.find().sort({createdAt: -1}).populate('_id').select('_id');
-        const posts = await Post.find().sort({updatedAt: -1});
+        const posts = await Post.find().sort({createdAt: -1}).populate('_id','name');
         //console.log(posts);
 
           if (!posts) {
@@ -107,16 +93,7 @@ exports.showPostById= async(req, res, next) => {
 }
 
 
-//   exports.showPostById = async (req, res) => {
-//   const { author } = req.query;
-//   const query = author ? { author } : {};
-//   try {
-//     const blogPosts = await BlogPost.find(query).populate('author');
-//     res.send(blogPosts);
-//   } catch (e) {
-//     res.status(500).send();
-//   }
-// };
+
 
       
 
@@ -126,9 +103,7 @@ exports.showPostById= async(req, res, next) => {
 //show single post
 exports.showSinglePost = async (req, res,next) =>{
     try{
-        // const {postId} = req.query;
-        // const post = await Post.findById({postId});
-        const post = await Post.findById(req.params.id);
+        const post = await Post.findById(req.params.id).populate('comments.postedBy');
         // const post = await Post.findById(req.params.id).populate('_id').select('_id');
         res.status(201).json({
             success: true,
