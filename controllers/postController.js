@@ -51,7 +51,7 @@ exports.showPosts = async (req, res,next) =>{
     //console.log();
     try{
         // const posts = await Post.find().sort({createdAt: -1}).populate('_id').select('_id');
-        const posts = await Post.find().sort({createdAt: -1}).populate('_id','name');
+        const posts = await Post.find().sort({createdAt: -1});
         //console.log(posts);
 
           if (!posts) {
